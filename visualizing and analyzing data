@@ -1,0 +1,45 @@
+code for visualizing the and analyzing data 
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.ensemble import IsolationForest
+
+# Generate synthetic data
+np.random.seed(42)
+data = {
+    'User': ['User' + str(i) for i in range(1, 101)],
+    'AccessCount': np.random.normal(50, 10, 100).tolist(),
+    'TimeSpent': np.random.normal(30, 5, 100).tolist()
+}
+
+# Add anomalous data
+data['AccessCount'] += [200, 220, 250]  # Anomalous behavior
+data['TimeSpent'] += [100, 120, 150]
+
+df = pd.DataFrame(data)
+
+# Plot original data
+plt.figure(figsize=(10, 6))
+sns.scatterplot(data=df, x='AccessCount', y='TimeSpent', hue='User')
+plt.title('User Activity')
+plt.xlabel('Access Count')
+plt.ylabel('Time Spent')
+plt.legend([], [], frameon=False)
+plt.show()
+
+# Detect anomalies using Isolation Forest
+features = df[['AccessCount', 'TimeSpent']]
+model = IsolationForest(contamination=0.05, random_state=42)
+df['Anomaly'] = model.fit_predict(features)
+
+# Visualize anomalies
+plt.figure(figsize=(10, 6))
+sns.scatterplot(data=df, x='AccessCount', y='TimeSpent', hue='Anomaly', palette={1: 'blue', -1: 'red'})
+plt.title('Anomalous vs. Normal Behavior')
+plt.xlabel('Access Count')
+plt.ylabel('Time Spent')
+plt.show()
+
+# Save the results
+df.to_csv('anomaly_results.csv', index=False)
